@@ -1,7 +1,7 @@
-# just-for-fun
-Read some related middleware source code  implementation and make magic changes ,just for fun
-
-- mem_pool
-- mini_nginx
+# middlewares
+Read some related middleware source code  implementation and base on that made some magic changes 
+- nginx
+  - mem_pool
+  - mini_nginx
 
 
