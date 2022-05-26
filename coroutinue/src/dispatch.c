@@ -9,7 +9,7 @@ void * syncenv_processor (void *thdata)
 
         proc = thdata;
         env = proc->env;
-        printf("\n 协程调度器 started\n");
+        printf("sched thread started\n");
 
         for (;;) {
                 //获取一个协程任务
@@ -18,7 +18,7 @@ void * syncenv_processor (void *thdata)
                 //2. 需要释放的话，直接返回NULL，当前直接结束线程
                 if (!task) 
                         break;
-
+                printf("exec one\n");
                 synctask_switchto (task);
                 //判断是否需要调度器扩缩容
                 syncenv_scale (env);
@@ -30,6 +30,9 @@ void * syncenv_processor (void *thdata)
 struct syncenv *
 syncenv_new (size_t stacksize, int procmin, int procmax)
 {
+        //初始化调度器
+        sched_init ();
+
         struct syncenv *newenv = NULL;
         int             ret = 0;
         int             i = 0;

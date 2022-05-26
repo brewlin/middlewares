@@ -1,4 +1,13 @@
 #include "syncop.h"
+extern pthread_key_t synctask_key;
+int sched_init ()
+{
+        int  ret = 0;
+
+        ret = pthread_key_create (&synctask_key, NULL);
+
+        return ret;
+}
 int
 gf_thread_create (pthread_t *thread, const pthread_attr_t *attr,
                   void *(*start_routine)(void *), void *arg, const char *name)

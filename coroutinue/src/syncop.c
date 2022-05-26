@@ -111,8 +111,7 @@ err:
         return NULL;
 }
 
-void
-synctask_wrap (void)
+void synctask_wrap (void)
 {
         struct synctask *task = NULL;
 
