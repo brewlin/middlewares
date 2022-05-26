@@ -1,0 +1,11 @@
+project(demo)
+
+add_definitions("-Wall -g")
+
+include_directories(./src)
+
+add_subdirectory(./src)
+
+add_executable(demo main.c)
+
+target_link_libraries(demo lib)
