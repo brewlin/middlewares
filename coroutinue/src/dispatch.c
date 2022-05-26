@@ -18,7 +18,6 @@ void * syncenv_processor (void *thdata)
                 //2. 需要释放的话，直接返回NULL，当前直接结束线程
                 if (!task) 
                         break;
-                printf("exec one\n");
                 synctask_switchto (task);
                 //判断是否需要调度器扩缩容
                 syncenv_scale (env);
