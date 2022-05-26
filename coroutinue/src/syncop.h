@@ -6,6 +6,10 @@
 #include <ucontext.h>
 #include <stdlib.h>
 #include "list.h"
+#include <sys/wait.h>
+#include <signal.h>
+#include <stdio.h>
+#include <errno.h>
 
 #define GF_BACKTRACE_LEN        4096
 #define SYNCENV_PROC_MAX 16
@@ -100,6 +104,7 @@ int synctask_new1 (struct syncenv *env, size_t stacksize, synctask_fn_t fn,
 struct synctask * synctask_create (struct syncenv *env, size_t stacksize, synctask_fn_t fn,
                  synctask_cbk_t cbk, void *opaque);
 struct syncenv * syncenv_new (size_t stacksize, int procmin, int procmax);
+struct synctask * syncenv_task (struct syncproc *proc);
 
 void synctask_wrap (void);
 void synctask_wake (struct synctask *task);
@@ -112,8 +117,10 @@ int  synctask_join (struct synctask *task);
 int gf_thread_create (pthread_t *thread, const pthread_attr_t *attr,
                   void *(*start_routine)(void *), void *arg, const char *name);
 void * syncenv_processor (void *thdata);
-static void __run (struct synctask *task);
+void __run (struct synctask *task);
 void synctask_switchto (struct synctask *task);
 void syncenv_scale (struct syncenv *env);
 void __wait (struct synctask *task);
+void syncenv_destroy (struct syncenv *env);
+int synctask_set (void *synctask);
 #endif

@@ -1,5 +1,7 @@
 #include "syncop.h"
 
+pthread_key_t synctask_key;
+
 int
 synctask_new (struct syncenv *env, synctask_fn_t fn, synctask_cbk_t cbk, void *opaque)
 {
@@ -102,8 +104,8 @@ synctask_create (struct syncenv *env, size_t stacksize, synctask_fn_t fn,
 	return newtask;
 err:
         if (newtask) {
-                GF_FREE (newtask->stack);
-                GF_FREE (newtask);
+                free (newtask->stack);
+                free (newtask);
         }
 
         return NULL;
@@ -172,7 +174,7 @@ synctask_destroy (struct synctask *task)
         if (!task)
                 return;
 
-        GF_FREE (task->stack);
+        free (task->stack);
 
 
         if (task->synccbk == NULL) {
@@ -180,7 +182,7 @@ synctask_destroy (struct synctask *task)
                pthread_cond_destroy (&task->cond);
         }
 
-        GF_FREE (task);
+        free (task);
 }
 
 void
@@ -218,4 +220,42 @@ synctask_join (struct synctask *task)
 
 	return ret;
 }
+void syncenv_destroy (struct syncenv *env)
+{
+        if (env == NULL)
+                return;
+
+        pthread_mutex_lock (&env->mutex);
+        {
+                env->destroy = 1;
+                /* This broadcast will wake threads in pthread_cond_wait
+                 * in syncenv_task
+                 */
+                pthread_cond_broadcast (&env->cond);
+
+                /* when the syncenv_task() thread is exiting, it broadcasts to
+                 * wake the below wait.
+                 */
+                while (env->procs != 0) {
+                        pthread_cond_wait (&env->cond, &env->mutex);
+                }
+        }
+        pthread_mutex_unlock (&env->mutex);
+
+        pthread_mutex_destroy (&env->mutex);
+        pthread_cond_destroy (&env->cond);
+
+        free (env);
+
+        return;
+}
+int synctask_set (void *synctask)
+{
+        int     ret = 0;
+
+        pthread_setspecific (synctask_key, synctask);
+
+        return ret;
+}
+
 

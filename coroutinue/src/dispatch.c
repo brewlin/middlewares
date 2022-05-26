@@ -84,8 +84,7 @@ syncenv_new (size_t stacksize, int procmin, int procmax)
 
 
 
-static void
-__run (struct synctask *task)
+void __run (struct synctask *task)
 {
         struct syncenv *env = NULL;
 
@@ -195,8 +194,7 @@ unlock:
         pthread_mutex_unlock (&env->mutex);
 }
 
-static void
-__wait (struct synctask *task)
+void __wait (struct synctask *task)
 {
         struct syncenv *env = NULL;
 
@@ -225,4 +223,55 @@ __wait (struct synctask *task)
         list_add_tail (&task->all_tasks, &env->waitq);
         env->waitcount++;
         task->state = SYNCTASK_WAIT;
+}
+
+struct synctask * syncenv_task (struct syncproc *proc)
+{
+        struct syncenv   *env = NULL;
+        struct synctask  *task = NULL;
+        struct timespec   sleep_till = {0, };
+        int               ret = 0;
+
+        env = proc->env;
+
+        pthread_mutex_lock (&env->mutex);
+        {
+                //从协程队列里获取一个任务来运行
+                //如果一直没有任务到来就陷入睡眠
+                while (list_empty (&env->runq)) {
+                        sleep_till.tv_sec = time (NULL) + SYNCPROC_IDLE_TIME;
+                        ret = pthread_cond_timedwait (&env->cond, &env->mutex,
+                                                      &sleep_till);
+                        if (!list_empty (&env->runq))
+                                break;
+                        //1. 睡眠等待超时后都没有任务到来
+                        //2. 总线程 > 最小2个的情况
+                        // 或者
+                        //1. destroy && 等待唤醒的协程为空
+                        //需要释放当前线程，进行缩容
+                        if (((ret == ETIMEDOUT) && (env->procs > env->procmin))
+                            || (env->destroy && list_empty (&env->waitq))) {
+                                task = NULL;
+                                env->procs--;
+                                //可能需要缩容了，释放当前线程
+                                memset (proc, 0, sizeof (*proc));
+                                pthread_cond_broadcast (&env->cond);
+                                goto unlock;
+                        }
+                }
+                //获取到任务
+                task = list_entry (env->runq.next, struct synctask, all_tasks);
+                //从双端链表中删除当前节点
+                list_del_init (&task->all_tasks);
+                env->runcount--;
+
+                task->woken = 0;
+                task->slept = 0;
+                //保存这个task所在的调度器线程
+                task->proc = proc;
+        }
+unlock:
+        pthread_mutex_unlock (&env->mutex);
+
+        return task;
 }
