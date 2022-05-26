@@ -160,7 +160,7 @@ synctask_yield (struct synctask *task)
 
         if (task->state != SYNCTASK_DONE) {
                 task->state = SYNCTASK_SUSPEND;
-                (void) gf_backtrace_save (task->btbuf);
+                // (void) gf_backtrace_save (task->btbuf);
         }
         //将当前context保存到 task->ctx,然后跳转到task->proc->sched上去执行
         //task->proc->sched 就是线程调度器，会恢复到线程调度的那个循环里面
@@ -259,3 +259,11 @@ int synctask_set (void *synctask)
 }
 
 
+void *synctask_get ()
+{
+        void   *synctask = NULL;
+        //获取线程缓存
+        synctask = pthread_getspecific (synctask_key);
+
+        return synctask;
+}

@@ -10,4 +10,4 @@ add_subdirectory(./src)
 
 add_executable(demo main.c)
 
-target_link_libraries(demo co-lib)
+target_link_libraries(demo co-lib pthread)

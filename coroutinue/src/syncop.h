@@ -10,7 +10,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <errno.h>
-
+#define GF_LINUX_HOST_OS
 #define GF_BACKTRACE_LEN        4096
 #define SYNCENV_PROC_MAX 16
 #define SYNCENV_PROC_MIN 2
@@ -123,4 +123,5 @@ void syncenv_scale (struct syncenv *env);
 void __wait (struct synctask *task);
 void syncenv_destroy (struct syncenv *env);
 int synctask_set (void *synctask);
+void *synctask_get ();
 #endif
