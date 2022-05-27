@@ -97,10 +97,11 @@ struct syncenv {
 		}							\
 	} while (0)
 
-
+typedef struct syncenv scheduler;
+typedef struct synctask task;
 
 //----------------------------------函数声明-------------------------------
-int synctask_new (struct syncenv *env, synctask_fn_t fn, synctask_cbk_t cbk, void *opaque);
+int go (struct syncenv *env, synctask_fn_t fn, synctask_cbk_t cbk, void *opaque);
 int synctask_new1 (struct syncenv *env, size_t stacksize, synctask_fn_t fn,
                 synctask_cbk_t cbk, void *opaque);
 struct synctask * synctask_create (struct syncenv *env, size_t stacksize, synctask_fn_t fn,

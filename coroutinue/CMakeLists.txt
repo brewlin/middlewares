@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(demo)
 
-add_definitions("-g")
+add_definitions("-W -g")
 
 include_directories(./src)
 

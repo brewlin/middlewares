@@ -11,6 +11,7 @@ synclock_t* lock_create(){
     }
     lock->Lock = synclock_lock;
     lock->UnLock = synclock_unlock;
+    lock->Free  = lock_free;
     return lock;
 }
 void lock_free(synclock_t *lock)

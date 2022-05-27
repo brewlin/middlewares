@@ -1,9 +1,8 @@
 #include "syncop.h"
 #include "lock.h"
-typedef struct syncenv sched;
-typedef struct synctask task;
 
-synclock_t *lock;
+mutex *lock;//创建全局锁
+
 int count = 50;
 int co(void *data){
     task* t = synctask_get ();
@@ -28,15 +27,15 @@ int co2(void *data){
 }
 void main(){
     //全局调度器
-    sched *go = syncenv_new(0,10,0);
+    scheduler *sched = syncenv_new(0,10,0);
     sleep(5);//等待调度线程完全创建
     lock = lock_create();//创建一个锁
 
     for(int i = 0 ; i < 50 ; i ++){
         //创建一个协程,无需阻塞等待结果
-        synctask_new(go,co,co_callback,(void*)i);
+        go(sched,co,co_callback,(void*)i);
     }
-    //启动一个print 10s的协程，阻塞
-    synctask_new(go,co2,NULL,NULL);
-    lock_free(lock);
+    //阻塞等待所有协程任务完成
+    go(sched,co2,NULL,NULL);
+    lock->Free(lock);
 }

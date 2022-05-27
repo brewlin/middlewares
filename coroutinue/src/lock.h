@@ -17,6 +17,7 @@ typedef enum {
 
 typedef int (*lock_fn_t)   (void *lock);
 typedef int (*unlock_fn_t) (void *lock);
+typedef void (*free_fn_t) (void *lock);
 
 struct synclock {
         pthread_mutex_t     guard; /* guard the remaining members, pair @cond */
@@ -31,8 +32,10 @@ struct synclock {
         //member func
         lock_fn_t           Lock;
         unlock_fn_t         UnLock;
+        free_fn_t           Free;
 };
 typedef struct synclock synclock_t;
+typedef struct synclock mutex;
 
 
 synclock_t* lock_create();

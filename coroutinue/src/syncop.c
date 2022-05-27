@@ -3,7 +3,7 @@
 pthread_key_t synctask_key;
 
 int
-synctask_new (struct syncenv *env, synctask_fn_t fn, synctask_cbk_t cbk, void *opaque)
+go (struct syncenv *env, synctask_fn_t fn, synctask_cbk_t cbk, void *opaque)
 {
         return synctask_new1 (env, 0, fn, cbk, opaque);
 }
